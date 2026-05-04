@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>Typing Practice</title>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600;700&family=Sora:wght@300;400;500;600&display=swap" rel="stylesheet"/>
+<style>
+*{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --bg:#f8f7f4;--bg2:#ffffff;--bg3:#f0ede8;
+  --text:#1a1917;--text2:#6b6963;--text3:#9c9890;
+  --border:#e2dfd8;--border2:#c8c4bc;
+  --blue:#2563eb;--blue-bg:#eff6ff;--blue-border:#bfdbfe;
+  --green:#16a34a;--green-bg:#f0fdf4;--green-border:#bbf7d0;
+  --red:#dc2626;--red-bg:#fef2f2;
+  --amber:#d97706;
+  --radius:10px;--radius-lg:14px;
+}
+body{background:var(--bg);font-family:'Sora',sans-serif;color:var(--text);min-height:100vh;}
+#app{max-width:760px;margin:0 auto;padding:1.5rem 1rem 3rem;}
+
+/* TOP BAR */
+.topbar{display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem;}
+.topbar h1{font-size:18px;font-weight:600;letter-spacing:-.3px;}
+#top-badge{font-size:11px;padding:3px 10px;border-radius:20px;background:var(--blue-bg);color:var(--blue);border:1px solid var(--blue-border);font-weight:500;}
+
+/* STATS */
+.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:1rem;}
+.stat{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius);padding:10px 8px;text-align:center;}
+.sv{font-family:'JetBrains Mono',monospace;font-size:20px;font-weight:700;color:var(--text);line-height:1;}
+.sl{font-size:9px;color:var(--text2);text-transform:uppercase;letter-spacing:.09em;margin-top:3px;}
+
+/* CARDS */
+.card{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:1rem 1.1rem;margin-bottom:.85rem;}
+.card-lbl{font-size:9px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;margin-bottom:8px;}
+
+/* SETUP */
+#sentence-ta{width:100%;font-family:'Sora',sans-serif;font-size:13px;padding:8px 11px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text);resize:none;height:48px;outline:none;transition:border-color .15s;}
+#sentence-ta:focus{border-color:var(--blue);}
+.row2{display:flex;gap:8px;align-items:center;margin-top:8px;flex-wrap:wrap;}
+.row2 label{font-size:11px;color:var(--text2);white-space:nowrap;}
+#rep-input{width:52px;font-family:'JetBrains Mono',monospace;font-size:12px;padding:6px 8px;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text);outline:none;text-align:center;}
+#build-btn{padding:8px 16px;font-family:'Sora',sans-serif;font-size:12px;font-weight:600;border:none;border-radius:var(--radius);background:var(--blue);color:#fff;cursor:pointer;white-space:nowrap;transition:opacity .15s;}
+#build-btn:hover{opacity:.88;}
+.presets{display:flex;flex-wrap:wrap;gap:4px;margin-top:8px;}
+.pre{font-size:10px;padding:3px 9px;border-radius:20px;border:1px solid var(--border);background:var(--bg3);color:var(--text2);cursor:pointer;transition:all .12s;}
+.pre:hover{border-color:var(--border2);color:var(--text);}
+
+/* ROUNDS LIST */
+.rounds-list{display:flex;flex-direction:column;gap:3px;max-height:200px;overflow-y:auto;}
+.rrow{display:flex;align-items:center;gap:8px;padding:7px 9px;border-radius:var(--radius);border:1px solid var(--border);background:var(--bg3);cursor:pointer;transition:all .12s;}
+.rrow:hover{border-color:var(--border2);background:var(--bg2);}
+.rrow.active{background:var(--blue-bg);border-color:var(--blue-border);}
+.rrow.done{background:var(--green-bg);border-color:var(--green-border);}
+.rr-medal{font-size:13px;width:18px;text-align:center;flex-shrink:0;}
+.rr-info{flex:1;min-width:0;}
+.rr-chunk{font-family:'JetBrains Mono',monospace;font-size:11px;font-weight:600;color:var(--text);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
+.rr-sub{font-size:9px;color:var(--text2);margin-top:1px;}
+.rr-count{font-family:'JetBrains Mono',monospace;font-size:10px;flex-shrink:0;}
+.rr-count.done-c{color:var(--green);}
+.rr-count.act-c{color:var(--blue);}
+.rr-count.pend-c{color:var(--text3);}
+
+/* PRACTICE */
+.phase-header{display:flex;align-items:center;gap:8px;margin-bottom:6px;flex-wrap:wrap;}
+.phase-medal{font-size:18px;}
+.phase-title{font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.09em;}
+.phase-badge{font-size:9px;padding:2px 8px;border-radius:20px;font-weight:600;border:1px solid;}
+.pb-letter{background:#eff6ff;color:#1d4ed8;border-color:#bfdbfe;}
+.pb-word{background:#fdf4ff;color:#7c3aed;border-color:#e9d5ff;}
+.pb-pair{background:#fff7ed;color:#c2410c;border-color:#fed7aa;}
+.pb-jumbled{background:#fdf2f8;color:#be185d;border-color:#fbcfe8;}
+.pb-combo{background:#f0fdf4;color:#15803d;border-color:#bbf7d0;}
+.pb-full{background:#fefce8;color:#a16207;border-color:#fde68a;}
+
+.current-chunk{font-family:'JetBrains Mono',monospace;font-size:22px;font-weight:700;color:var(--text);margin-bottom:6px;}
+
+.rep-row{display:flex;align-items:center;gap:8px;margin-bottom:10px;flex-wrap:wrap;}
+.rep-dots{display:flex;gap:3px;flex-wrap:wrap;}
+.rdot{width:10px;height:10px;border-radius:50%;border:1px solid var(--border2);background:var(--bg3);transition:background .15s,border-color .15s;}
+.rdot.done{background:var(--green);border-color:var(--green);}
+.rdot.cur{background:var(--blue);border-color:var(--blue);animation:rpulse .9s ease infinite;}
+@keyframes rpulse{0%,100%{opacity:1;}50%{opacity:.4;}}
+.rep-lbl{font-size:11px;color:var(--text2);}
+
+#target-display{font-family:'JetBrains Mono',monospace;font-size:22px;line-height:2.2;letter-spacing:.02em;margin-bottom:.85rem;min-height:50px;word-break:break-all;}
+.ch.correct{color:var(--green);}
+.ch.wrong{color:var(--red);background:var(--red-bg);border-radius:2px;}
+.ch.cursor{background:#dbeafe;border-radius:3px;animation:cblink .7s ease infinite;}
+.ch.pending{color:var(--text3);}
+@keyframes cblink{0%,100%{background:#dbeafe;}50%{background:#eff6ff;}}
+
+#type-in{width:100%;font-family:'JetBrains Mono',monospace;font-size:15px;padding:10px 13px;border:1.5px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text);outline:none;caret-color:var(--blue);transition:border-color .15s;}
+#type-in:focus{border-color:var(--blue);background:var(--bg2);}
+.progbar{height:3px;background:var(--bg3);border-radius:3px;margin-top:10px;overflow:hidden;}
+.progfill{height:100%;background:var(--blue);border-radius:3px;transition:width .08s;}
+
+.ctrl-row{display:flex;gap:7px;margin-bottom:.85rem;}
+.ctrl{flex:1;padding:8px;font-family:'Sora',sans-serif;font-size:11px;font-weight:500;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg2);color:var(--text);cursor:pointer;transition:background .12s;}
+.ctrl:hover{background:var(--bg3);}
+
+/* FINGER PANEL */
+.finger-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.9rem 1rem;margin-bottom:.85rem;}
+.finger-intro{font-size:11px;color:var(--text2);margin-bottom:10px;line-height:1.5;}
+.finger-grid{display:grid;grid-template-columns:1fr 1fr;gap:6px;}
+.fcard{border-radius:var(--radius);padding:8px 10px;border:1.5px solid;}
+.fcard.fc0{background:#eff6ff;border-color:#93c5fd;}
+.fcard.fc1{background:#f0fdf4;border-color:#86efac;}
+.fcard.fc2{background:#fff7ed;border-color:#fdba74;}
+.fcard.fc3{background:#fdf2f8;border-color:#f9a8d4;}
+.fcard.fc4{background:#f5f3ff;border-color:#c4b5fd;}
+.fcard.fc5{background:#fef2f2;border-color:#fca5a5;}
+.fcard.fc6{background:#ecfdf5;border-color:#6ee7b7;}
+.fcard.fc7{background:#f9fafb;border-color:#d1d5db;}
+.fcard.lit{outline:3px solid var(--blue);outline-offset:2px;}
+.fc-hand{font-size:9px;color:var(--text2);margin-bottom:2px;}
+.fc-name{font-size:11px;font-weight:600;color:var(--text);}
+.fc-home{font-size:10px;color:var(--text2);margin-top:1px;}
+.fc-keys{font-family:'JetBrains Mono',monospace;font-size:9px;color:var(--text2);margin-top:3px;line-height:1.6;}
+
+/* KEYBOARD */
+.kb-section{background:var(--bg2);border:1px solid var(--border);border-radius:var(--radius-lg);padding:.85rem .75rem;}
+.kb-toprow{display:flex;align-items:center;justify-content:space-between;margin-bottom:6px;}
+.kb-hint{font-size:9px;color:var(--text2);}
+.legend-row{display:flex;flex-wrap:wrap;gap:5px;}
+.leg{display:flex;align-items:center;gap:3px;font-size:9px;color:var(--text2);}
+.leg-dot{width:8px;height:8px;border-radius:50%;}
+.kb-rows{display:flex;flex-direction:column;gap:2px;}
+.kb-row{display:flex;justify-content:center;gap:2px;}
+.key{display:flex;align-items:center;justify-content:center;min-width:30px;height:30px;border-radius:5px;font-size:10px;font-weight:600;font-family:'JetBrains Mono',monospace;border:1.5px solid;cursor:default;transition:transform .07s,filter .07s;user-select:none;position:relative;}
+.key.wide{min-width:46px;}
+.key.wider{min-width:58px;}
+.key.space-key{min-width:160px;}
+.key.pressed{transform:scale(.88);filter:brightness(.8);}
+.key.next-key{border-color:var(--blue)!important;outline:2px solid var(--blue);outline-offset:1px;transform:scale(1.1);box-shadow:0 0 0 3px rgba(37,99,235,.15);}
+
+.key.kf0{background:#dbeafe;border-color:#93c5fd;color:#1e40af;}
+.key.kf1{background:#dcfce7;border-color:#86efac;color:#14532d;}
+.key.kf2{background:#ffedd5;border-color:#fdba74;color:#7c2d12;}
+.key.kf3{background:#fce7f3;border-color:#f9a8d4;color:#831843;}
+.key.kf4{background:#ede9fe;border-color:#c4b5fd;color:#3730a3;}
+.key.kf5{background:#fee2e2;border-color:#fca5a5;color:#7f1d1d;}
+.key.kf6{background:#d1fae5;border-color:#6ee7b7;color:#064e3b;}
+.key.kf7{background:#f3f4f6;border-color:#d1d5db;color:#374151;}
+.key.kfn{background:#f8f7f4;border-color:#e2dfd8;color:#6b6963;}
+
+/* FINISH */
+.finish-wrap{text-align:center;padding:2rem 1rem;}
+.fin-emoji{font-size:42px;margin-bottom:.5rem;}
+.fin-title{font-size:20px;font-weight:600;color:var(--text);margin-bottom:.3rem;}
+.fin-sub{font-size:13px;color:var(--text2);margin-bottom:1.5rem;}
+.fin-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-bottom:1.5rem;}
+.fstat{background:var(--bg3);border-radius:var(--radius);padding:12px;}
+.fstat-v{font-family:'JetBrains Mono',monospace;font-size:26px;font-weight:700;color:var(--text);}
+.fstat-l{font-size:10px;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-top:3px;}
+.fin-btn{padding:9px 20px;font-family:'Sora',sans-serif;font-size:13px;font-weight:500;border:1px solid var(--border);border-radius:var(--radius);background:var(--bg3);color:var(--text);cursor:pointer;margin:3px;transition:background .12s;}
+.fin-btn:hover{background:var(--border);}
+
+.rep-flash{animation:rflash .35s ease;}
+@keyframes rflash{0%{background:#dbeafe;}100%{background:var(--bg2);}}
+
+.phase-divider{font-size:9px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.1em;padding:5px 9px;background:var(--bg3);border-radius:6px;margin:4px 0;}
+
+.hidden{display:none!important;}
+</style>
+</head>
+<body>
+<div id="app">
+
+<div class="topbar">
+  <h1>⌨️ Typing practice</h1>
+  <span id="top-badge">Set up your sentence</span>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="sv" id="s-wpm">0</div><div class="sl">WPM</div></div>
+  <div class="stat"><div class="sv" id="s-acc">100%</div><div class="sl">Accuracy</div></div>
+  <div class="stat"><div class="sv" id="s-time">0s</div><div class="sl">Time</div></div>
+  <div class="stat"><div class="sv" id="s-err">0</div><div class="sl">Errors</div></div>
+</div>
+
+<!-- SETUP -->
+<div class="card" id="setup-card">
+  <div class="card-lbl">Your sentence</div>
+  <textarea id="sentence-ta" placeholder="e.g.  pack my bag   or   the quick brown fox jumps"></textarea>
+  <div class="row2">
+    <label>Reps per chunk:</label>
+    <input id="rep-input" type="number" min="1" max="30" value="10"/>
+    <button id="build-btn">Build rounds →</button>
+  </div>
+  <div class="presets">
+    <span style="font-size:10px;color:var(--text2);margin-right:3px;">Try:</span>
+    <button class="pre" data-t="pack my bag">pack my bag</button>
+    <button class="pre" data-t="the quick brown fox">quick fox</button>
+    <button class="pre" data-t="keep calm and carry on">keep calm</button>
+    <button class="pre" data-t="practice makes perfect">practice makes perfect</button>
+    <button class="pre" data-t="the quick brown fox jumps over the lazy dog">pangram</button>
+  </div>
+</div>
+
+<!-- ROUNDS LIST -->
+<div class="card hidden" id="rounds-card">
+  <div class="card-lbl">All rounds — click any to jump</div>
+  <div class="rounds-list" id="rounds-list"></div>
+</div>
+
+<!-- PRACTICE -->
+<div class="card hidden" id="practice-card">
+  <div class="phase-header">
+    <span class="phase-medal" id="ph-medal"></span>
+    <span class="phase-title" id="ph-title"></span>
+    <span class="phase-badge" id="ph-badge"></span>
+  </div>
+  <div class="current-chunk" id="current-chunk"></div>
+  <div class="rep-row">
+    <div class="rep-dots" id="rep-dots"></div>
+    <span class="rep-lbl" id="rep-lbl"></span>
+  </div>
+  <div id="target-display"></div>
+  <input id="type-in" type="text" placeholder="Start typing here…" autocomplete="off" autocorrect="off" autocapitalize="off" spellcheck="false"/>
+  <div class="progbar"><div class="progfill" id="prog" style="width:0%"></div></div>
+</div>
+
+<!-- FINISH -->
+<div class="card hidden" id="finish-card">
+  <div class="finish-wrap">
+    <div class="fin-emoji">🏆</div>
+    <div class="fin-title" id="fin-title">All rounds complete!</div>
+    <div class="fin-sub" id="fin-sub"></div>
+    <div class="fin-stats">
+      <div class="fstat"><div class="fstat-v" id="fr-wpm">—</div><div class="fstat-l">Best WPM</div></div>
+      <div class="fstat"><div class="fstat-v" id="fr-acc">—</div><div class="fstat-l">Avg Accuracy</div></div>
+      <div class="fstat"><div class="fstat-v" id="fr-reps">—</div><div class="fstat-l">Total reps</div></div>
+    </div>
+    <button class="fin-btn" id="fin-restart">Practice again</button>
+    <button class="fin-btn" id="fin-new">New sentence</button>
+  </div>
+</div>
+
+<div class="ctrl-row hidden" id="ctrl-row">
+  <button class="ctrl" id="retry-btn">↺ Retry rep</button>
+  <button class="ctrl" id="skip-btn">Skip round →</button>
+  <button class="ctrl" id="restart-btn">⟳ Restart all</button>
+</div>
+
+<!-- FINGER GUIDE -->
+<div class="finger-section hidden" id="finger-section">
+  <div class="card-lbl">Finger placement guide</div>
+  <div class="finger-intro">Place your index fingers on <strong>F</strong> and <strong>J</strong> (the bumped keys). Each finger owns the keys in its color. The guide highlights which finger to use for the next key.</div>
+  <div class="finger-grid" id="finger-grid"></div>
+</div>
+
+<!-- KEYBOARD -->
+<div class="kb-section">
+  <div class="kb-toprow">
+    <span class="kb-hint">Blue glow = next key · Color = which finger</span>
+    <div class="legend-row" id="kb-legend"></div>
+  </div>
+  <div class="kb-rows" id="kb-rows"></div>
+</div>
+
+</div>
+
+<script>
+const FMAP = {
+  '`':0,'1':0,'2':1,'3':2,'4':3,'5':3,'6':4,'7':4,'8':5,'9':6,'0':7,'-':7,'=':7,
+  'q':0,'w':1,'e':2,'r':3,'t':3,'y':4,'u':4,'i':5,'o':6,'p':7,'[':7,']':7,'\\':7,
+  'a':0,'s':1,'d':2,'f':3,'g':3,'h':4,'j':4,'k':5,'l':6,';':7,"'":7,
+  'z':0,'x':1,'c':2,'v':3,'b':3,'n':4,'m':4,',':5,'.':6,'/':7,' ':8
+};
+const FNAMES = ['Left pinky','Left ring','Left middle','Left index','Right index','Right middle','Right ring','Right pinky'];
+const FHANDS = ['Left','Left','Left','Left','Right','Right','Right','Right'];
+const FHOME_KEY = ['A','S','D','F','J','K','L',';'];
+const FKEY_LIST = [
+  ['`','1','Q','A','Z'],
+  ['2','W','S','X'],
+  ['3','E','D','C'],
+  ['4','5','R','T','F','G','V','B'],
+  ['6','7','Y','U','H','J','N','M'],
+  ['8','I','K',','],
+  ['9','O','L','.'],
+  ['0','-','=','P','[',']','\\',';',"'",'/',]
+];
+const FCOLORS = ['#93c5fd','#86efac','#fdba74','#f9a8d4','#c4b5fd','#fca5a5','#6ee7b7','#d1d5db'];
+const FLEG = ['L.pinky','L.ring','L.middle','L.index','R.index','R.middle','R.ring','R.pinky'];
+
+const ROWS = [
+  ['`','1','2','3','4','5','6','7','8','9','0','-','=','Bksp'],
+  ['Tab','q','w','e','r','t','y','u','i','o','p','[',']','\\'],
+  ['Caps','a','s','d','f','g','h','j','k','l',';',"'",'Enter'],
+  ['Shift','z','x','c','v','b','n','m',',','.','/','Shift'],
+  ['Space']
+];
+const WIDES = new Set(['Bksp','Tab','Caps','Enter','Shift']);
+const keyEls = {};
+
+const MEDALS = ['🥇','🥈','🥉','🏅','⭐','🌟','🎖️','🏆','💎','🔥'];
+function getMedal(i,tot){ return i===tot-1?'🏆': MEDALS[i % (MEDALS.length-1)]; }
+
+// ── Build keyboard ──────────────────────────────────────────────────
+function buildKB(){
+  const container = document.getElementById('kb-rows');
+  ROWS.forEach(row => {
+    const rowDiv = document.createElement('div');
+    rowDiv.className = 'kb-row';
+    row.forEach(k => {
+      const el = document.createElement('div');
+      el.className = 'key';
+      const lk = k.toLowerCase();
+      const mk = k === 'Space' ? ' ' : lk;
+      const fi = FMAP[mk] ?? -1;
+      if(fi >= 0 && fi < 8) el.classList.add('kf'+fi);
+      else el.classList.add('kfn');
+      if(k === 'Space') el.classList.add('space-key');
+      else if(WIDES.has(k)) el.classList.add(k==='Caps'||k==='Enter'?'wider':'wide');
+      el.textContent = k === 'Space' ? 'Space' : k;
+      rowDiv.appendChild(el);
+      if(!keyEls[mk]) keyEls[mk] = el;
+    });
+    container.appendChild(rowDiv);
+  });
+  // legend
+  const leg = document.getElementById('kb-legend');
+  FLEG.forEach((name,i) => {
+    const d = document.createElement('div');
+    d.className = 'leg';
+    d.innerHTML = `<div class="leg-dot" style="background:${FCOLORS[i]}"></div>${name}`;
+    leg.appendChild(d);
+  });
+}
+
+// ── Build finger cards ──────────────────────────────────────────────
+function buildFingerCards(){
+  const grid = document.getElementById('finger-grid');
+  grid.innerHTML = '';
+  for(let i=0;i<8;i++){
+    const c = document.createElement('div');
+    c.className = `fcard fc${i}`;
+    c.id = 'fc'+i;
+    c.innerHTML = `<div class="fc-hand">${FHANDS[i]} hand</div>
+      <div class="fc-name">${FNAMES[i]}</div>
+      <div class="fc-home">Home key: <strong>${FHOME_KEY[i]}</strong></div>
+      <div class="fc-keys">${FKEY_LIST[i].join(' · ')}</div>`;
+    grid.appendChild(c);
+  }
+}
+
+// ── Round generation ────────────────────────────────────────────────
+function shuffle(a){ const b=[...a]; for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]];} return b; }
+
+function buildRounds(words, reps){
+  const rounds = [];
+  const add = (chunk,type,phase) => rounds.push({chunk,type,phase,reps});
+
+  // PHASE 1: letter by letter for each word
+  words.forEach(w => {
+    for(let l=1; l<=w.length; l++){
+      add(w.slice(0,l), `letter ${l}`, 'letter');
+    }
+  });
+
+  // PHASE 2: full words
+  words.forEach(w => add(w, 'full word', 'word'));
+
+  // PHASE 3: adjacent word pairs (in order)
+  if(words.length > 1){
+    for(let i=0;i<words.length-1;i++){
+      add(words[i]+' '+words[i+1], 'adjacent pair', 'pair');
+    }
+  }
+
+  // PHASE 4: jumbled word pairs
+  if(words.length > 1){
+    const sh = shuffle([...words]);
+    for(let i=0;i<sh.length-1;i++){
+      add(sh[i]+' '+sh[i+1], 'jumbled pair', 'jumbled');
+    }
+  }
+
+  // PHASE 5: growing combos (3 words+)
+  if(words.length > 2){
+    for(let end=3; end<=words.length; end++){
+      add(words.slice(0,end).join(' '), `${end}-word combo`, 'combo');
+    }
+  }
+
+  // PHASE 6: full sentence
+  if(words.length > 1){
+    add(words.join(' '), 'full sentence', 'full');
+  }
+
+  // deduplicate
+  const seen = new Set();
+  return rounds.filter(r => {
+    const k = r.chunk+'|'+r.type;
+    if(seen.has(k)) return false;
+    seen.add(k); return true;
+  });
+}
+
+// ── State ────────────────────────────────────────────────────────────
+let rounds=[], curRound=0, curRep=0;
+let target='', startTime=null, timerInt=null;
+let errors=0, errSet=new Set(), started=false;
+let doneRounds=new Set(), totalReps=0;
+let bestWpm=0, accSamples=[];
+
+// ── Render helpers ───────────────────────────────────────────────────
+function renderTarget(typed){
+  let html = '';
+  for(let i=0;i<target.length;i++){
+    const raw=target[i], disp=raw===' '?'&nbsp;':raw;
+    if(i<typed.length) html+=`<span class="ch ${typed[i]===raw?'correct':'wrong'}">${disp}</span>`;
+    else if(i===typed.length) html+=`<span class="ch cursor">${disp}</span>`;
+    else html+=`<span class="ch pending">${disp}</span>`;
+  }
+  document.getElementById('target-display').innerHTML = html;
+}
+
+function highlightNext(typed){
+  Object.values(keyEls).forEach(el=>el.classList.remove('next-key'));
+  document.querySelectorAll('.fcard').forEach(fc=>fc.classList.remove('lit'));
+  if(typed.length>=target.length) return;
+  const nc = target[typed.length].toLowerCase();
+  const el = keyEls[nc];
+  if(el) el.classList.add('next-key');
+  const fi = FMAP[nc] ?? -1;
+  if(fi>=0 && fi<8){ const fc=document.getElementById('fc'+fi); if(fc) fc.classList.add('lit'); }
+}
+
+function flashKey(ch){
+  const el=keyEls[ch.toLowerCase()];
+  if(!el) return;
+  el.classList.add('pressed');
+  setTimeout(()=>el.classList.remove('pressed'),100);
+}
+
+function updateStats(){
+  const typed=document.getElementById('type-in').value;
+  const elapsed=startTime?(Date.now()-startTime)/1000:0;
+  const words=typed.trim().split(/\s+/).filter(Boolean).length;
+  const wpm=elapsed>0?Math.round((words/elapsed)*60):0;
+  const correct=typed.length-errSet.size;
+  const acc=typed.length>0?Math.round((correct/typed.length)*100):100;
+  document.getElementById('s-wpm').textContent=wpm;
+  document.getElementById('s-acc').textContent=acc+'%';
+  document.getElementById('s-time').textContent=Math.round(elapsed)+'s';
+  document.getElementById('s-err').textContent=errors;
+}
+
+function renderRepDots(){
+  const total=rounds[curRound].reps;
+  const dots=document.getElementById('rep-dots');
+  dots.innerHTML='';
+  for(let i=0;i<total;i++){
+    const d=document.createElement('div');
+    d.className='rdot'+(i<curRep?' done':i===curRep?' cur':'');
+    dots.appendChild(d);
+  }
+  document.getElementById('rep-lbl').textContent=`${curRep} / ${total} reps`;
+}
+
+const BADGE_INFO = {
+  letter:  ['Letter-by-letter','pb-letter'],
+  word:    ['Full word','pb-word'],
+  pair:    ['Adjacent pair','pb-pair'],
+  jumbled: ['Jumbled pair','pb-jumbled'],
+  combo:   ['Growing combo','pb-combo'],
+  full:    ['Full sentence','pb-full'],
+};
+
+function renderRoundsList(){
+  const list=document.getElementById('rounds-list');
+  list.innerHTML='';
+  let lastPhase='';
+  rounds.forEach((r,i)=>{
+    if(r.phase !== lastPhase){
+      lastPhase=r.phase;
+      const div=document.createElement('div');
+      div.className='phase-divider';
+      const labels={letter:'Phase 1 — letter by letter',word:'Phase 2 — full words',pair:'Phase 3 — adjacent pairs',jumbled:'Phase 4 — jumbled pairs',combo:'Phase 5 — growing combos',full:'Phase 6 — full sentence'};
+      div.textContent=labels[r.phase]||r.phase;
+      list.appendChild(div);
+    }
+    const isDone=doneRounds.has(i), isAct=i===curRound;
+    const row=document.createElement('div');
+    row.className='rrow'+(isDone?' done':isAct?' active':'');
+    const medal=getMedal(i,rounds.length);
+    const repsDone=isDone?r.reps:isAct?curRep:0;
+    const pcls=isDone?'done-c':isAct?'act-c':'pend-c';
+    const [bl]=BADGE_INFO[r.phase]||['round'];
+    row.innerHTML=`<div class="rr-medal">${medal}</div>
+      <div class="rr-info">
+        <div class="rr-chunk">"${r.chunk}"</div>
+        <div class="rr-sub">${bl} · Round ${i+1}</div>
+      </div>
+      <div class="rr-count ${pcls}">${repsDone}/${r.reps}</div>`;
+    row.addEventListener('click',()=>jumpTo(i));
+    list.appendChild(row);
+  });
+}
+
+// ── Round control ────────────────────────────────────────────────────
+function startRep(){
+  const r=rounds[curRound];
+  target=r.chunk;
+  startTime=null; timerInt&&clearInterval(timerInt);
+  errors=0; errSet=new Set(); started=false;
+  document.getElementById('s-wpm').textContent='0';
+  document.getElementById('s-acc').textContent='100%';
+  document.getElementById('s-time').textContent='0s';
+  document.getElementById('s-err').textContent='0';
+  document.getElementById('prog').style.width='0%';
+  const ti=document.getElementById('type-in');
+  ti.value='';
+  const medal=getMedal(curRound,rounds.length);
+  document.getElementById('ph-medal').textContent=medal;
+  document.getElementById('ph-title').textContent=`Round ${curRound+1} of ${rounds.length}`;
+  const [bl,bc]=BADGE_INFO[r.phase]||['round','pb-word'];
+  const pb=document.getElementById('ph-badge');
+  pb.textContent=bl; pb.className='phase-badge '+bc;
+  document.getElementById('current-chunk').textContent='"'+r.chunk+'"';
+  document.getElementById('top-badge').textContent=`Round ${curRound+1} / ${rounds.length} · Rep ${curRep+1}/${r.reps}`;
+  renderRepDots();
+  renderRoundsList();
+  renderTarget('');
+  highlightNext('');
+  setTimeout(()=>ti.focus(),60);
+}
+
+function jumpTo(i){ curRound=i; curRep=0; startRep(); }
+
+function nextRep(){
+  // capture stats
+  const typed=document.getElementById('type-in').value;
+  const elapsed=startTime?(Date.now()-startTime)/1000:0;
+  const words=typed.trim().split(/\s+/).filter(Boolean).length;
+  const wpm=elapsed>0?Math.round((words/elapsed)*60):0;
+  const correct=typed.length-errSet.size;
+  const acc=typed.length>0?Math.round((correct/typed.length)*100):100;
+  if(wpm>bestWpm) bestWpm=wpm;
+  accSamples.push(acc);
+  curRep++; totalReps++;
+  const r=rounds[curRound];
+  if(curRep>=r.reps){
+    doneRounds.add(curRound);
+    curRound++; curRep=0;
+    if(curRound>=rounds.length){ showFinish(); return; }
+  }
+  const pc=document.getElementById('practice-card');
+  pc.classList.add('rep-flash');
+  setTimeout(()=>pc.classList.remove('rep-flash'),350);
+  startRep();
+}
+
+function showFinish(){
+  document.getElementById('practice-card').classList.add('hidden');
+  document.getElementById('ctrl-row').classList.add('hidden');
+  document.getElementById('finish-card').classList.remove('hidden');
+  const avgAcc=accSamples.length?Math.round(accSamples.reduce((a,b)=>a+b,0)/accSamples.length):100;
+  document.getElementById('fin-sub').textContent=`${rounds.length} rounds completed · ${totalReps} total reps`;
+  document.getElementById('fr-wpm').textContent=bestWpm;
+  document.getElementById('fr-acc').textContent=avgAcc+'%';
+  document.getElementById('fr-reps').textContent=totalReps;
+  document.getElementById('top-badge').textContent='All done! 🎉';
+  renderRoundsList();
+}
+
+// ── Events ───────────────────────────────────────────────────────────
+document.getElementById('build-btn').addEventListener('click',()=>{
+  const raw=document.getElementById('sentence-ta').value.trim();
+  if(!raw) return;
+  const words=raw.split(/\s+/).filter(Boolean);
+  const reps=Math.max(1,parseInt(document.getElementById('rep-input').value)||10);
+  rounds=buildRounds(words,reps);
+  curRound=0; curRep=0; doneRounds=new Set(); totalReps=0; bestWpm=0; accSamples=[];
+  ['rounds-card','practice-card','ctrl-row','finger-section'].forEach(id=>document.getElementById(id).classList.remove('hidden'));
+  document.getElementById('finish-card').classList.add('hidden');
+  buildFingerCards();
+  startRep();
+});
+
+document.querySelectorAll('.pre').forEach(b=>b.addEventListener('click',()=>document.getElementById('sentence-ta').value=b.dataset.t));
+document.getElementById('sentence-ta').addEventListener('keydown',e=>{if(e.key==='Enter'&&!e.shiftKey){e.preventDefault();document.getElementById('build-btn').click();}});
+
+document.getElementById('type-in').addEventListener('input',()=>{
+  const ti=document.getElementById('type-in');
+  const typed=ti.value;
+  if(!started&&typed.length>0){
+    started=true; startTime=Date.now();
+    timerInt=setInterval(updateStats,400);
+  }
+  for(let i=0;i<typed.length;i++){
+    if(typed[i]!==target[i]&&!errSet.has(i)){errSet.add(i);errors++;}
+  }
+  renderTarget(typed);
+  highlightNext(typed);
+  document.getElementById('prog').style.width=Math.min(typed.length/target.length*100,100)+'%';
+  updateStats();
+  if(typed===target){ clearInterval(timerInt); setTimeout(nextRep,120); }
+});
+
+document.getElementById('type-in').addEventListener('keydown',e=>{
+  if(!target) return;
+  const ch=e.key==='Space'?' ':e.key;
+  if(ch.length===1) flashKey(ch);
+});
+
+document.getElementById('retry-btn').addEventListener('click',()=>startRep());
+document.getElementById('skip-btn').addEventListener('click',()=>{
+  doneRounds.add(curRound); curRound++; curRep=0;
+  if(curRound>=rounds.length){showFinish();return;}
+  startRep();
+});
+document.getElementById('restart-btn').addEventListener('click',()=>{
+  curRound=0;curRep=0;doneRounds=new Set();totalReps=0;bestWpm=0;accSamples=[];
+  document.getElementById('finish-card').classList.add('hidden');
+  document.getElementById('practice-card').classList.remove('hidden');
+  document.getElementById('ctrl-row').classList.remove('hidden');
+  startRep();
+});
+document.getElementById('fin-restart').addEventListener('click',()=>{
+  curRound=0;curRep=0;doneRounds=new Set();totalReps=0;bestWpm=0;accSamples=[];
+  document.getElementById('finish-card').classList.add('hidden');
+  document.getElementById('practice-card').classList.remove('hidden');
+  document.getElementById('ctrl-row').classList.remove('hidden');
+  startRep();
+});
+document.getElementById('fin-new').addEventListener('click',()=>{
+  ['rounds-card','practice-card','ctrl-row','finger-section','finish-card'].forEach(id=>document.getElementById(id).classList.add('hidden'));
+  document.getElementById('sentence-ta').value='';
+  document.getElementById('top-badge').textContent='Set up your sentence';
+});
+
+buildKB();
+</script>
+</body>
+</html>
