@@ -11,3 +11,7 @@ while left < right:
 
 print("Reversed string:", "".join(a))
 
+## 2nd method
+s = a[::-1]
+print("Reversed string:", "".join(s))
+
